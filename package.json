@@ -1,13 +1,15 @@
 {
   "name": "cmc-e2e",
   "version": "1.0.0",
-  "description": "E2E tests for CMC application",
+  "description": "E2E tests for CMC application using Playwright",
   "scripts": {
-    "cypress:open": "cypress open",
-    "cypress:run": "cypress run",
-    "test:e2e": "cypress run"
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report"
   },
   "devDependencies": {
-    "cypress": "^13.6.0"
+    "@playwright/test": "^1.40.0"
   }
 }

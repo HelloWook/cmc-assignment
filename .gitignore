@@ -41,12 +41,14 @@ Thumbs.db
 # Database
 mysql_data/
 
-# Cypress
-cypress/videos/
-cypress/screenshots/
-cypress/downloads/
+# Node modules
 node_modules/
 package-lock.json
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/
 
 # Environment variables
 .env

@@ -7,6 +7,7 @@ import com.example.cmc.entity.Comment;
 import com.example.cmc.entity.User;
 import com.example.cmc.repository.CommentRepository;
 import com.example.cmc.repository.UserRespository;
+import com.example.cmc.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +45,7 @@ public class CommentService {
 
     public CommentResponse getCommentById(Long id) {
         Comment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("댓글을 찾을 수 없습니다."));
         return toResponse(comment);
     }
 
