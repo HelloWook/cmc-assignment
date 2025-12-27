@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시글 수정</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        footer {
+            background-color: #343a40;
+            color: #fff;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        #content {
+            min-height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="bi bi-chat-square-text"></i> 게시판
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">홈</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown" th:if="${isLoggedIn}">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> <span th:text="${currentUser.nickname}">사용자</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><span class="dropdown-item-text text-muted" th:text="${currentUser.email}">이메일</span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="d-inline">
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="bi bi-box-arrow-right"></i> 로그아웃
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            <div class="form-container">
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-circle"></i> <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div class="card">
+                    <div class="card-body p-4">
+                        <h2 class="card-title mb-4">
+                            <i class="bi bi-pencil"></i> 게시글 수정
+                        </h2>
+                        <form th:action="@{'/posts/' + ${post.id} + '/edit'}" method="post" th:object="${postRequest}">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">제목</label>
+                                <input type="text" class="form-control" id="title" th:field="*{title}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="content" class="form-label">내용</label>
+                                <textarea class="form-control" id="content" th:field="*{content}" rows="15" required></textarea>
+                            </div>
+                            <div class="mb-3" th:if="${categories != null and !categories.isEmpty()}">
+                                <label class="form-label">
+                                    <i class="bi bi-tags"></i> 카테고리 선택
+                                    <small class="text-muted">(여러 개 선택 가능)</small>
+                                </label>
+                                <div class="category-select-container p-4 border rounded" style="background: linear-gradient(to bottom, #f8f9fa, #ffffff);">
+                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                        <div th:each="category : ${categories}" class="form-check">
+                                            <input class="form-check-input category-checkbox" 
+                                                   type="checkbox" 
+                                                   th:id="'category_' + ${category.id}"
+                                                   th:value="${category.id}"
+                                                   th:name="categoryIds"
+                                                   th:checked="${postRequest.categoryIds != null and postRequest.categoryIds.contains(category.id)}"
+                                                   style="cursor: pointer;">
+                                            <label class="form-check-label category-label" 
+                                                   th:for="'category_' + ${category.id}"
+                                                   th:styleappend="${postRequest.categoryIds != null and postRequest.categoryIds.contains(category.id)} ? 'border-color: #0d6efd; background-color: #e7f1ff; color: #0d6efd; font-weight: 600;' : ''"
+                                                   style="cursor: pointer; padding: 0.5rem 1rem; border: 2px solid #dee2e6; border-radius: 0.5rem; background: white; transition: all 0.2s; display: inline-block;"
+                                                   th:text="${category.name}"
+                                                   onmouseover="if(!document.getElementById('category_' + ${category.id}).checked) { this.style.borderColor='#0d6efd'; this.style.backgroundColor='#f0f7ff'; }"
+                                                   onmouseout="if(!document.getElementById('category_' + ${category.id}).checked) { this.style.borderColor='#dee2e6'; this.style.backgroundColor='white'; }"
+                                                   onclick="document.getElementById('category_' + ${category.id}).click();">
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const checkboxes = document.querySelectorAll('.category-checkbox');
+                                        checkboxes.forEach(checkbox => {
+                                            if (checkbox.checked) {
+                                                const label = document.querySelector('label[for="' + checkbox.id + '"]');
+                                                label.style.borderColor = '#0d6efd';
+                                                label.style.backgroundColor = '#e7f1ff';
+                                                label.style.color = '#0d6efd';
+                                                label.style.fontWeight = '600';
+                                            }
+                                            checkbox.addEventListener('change', function() {
+                                                const label = document.querySelector('label[for="' + this.id + '"]');
+                                                if (this.checked) {
+                                                    label.style.borderColor = '#0d6efd';
+                                                    label.style.backgroundColor = '#e7f1ff';
+                                                    label.style.color = '#0d6efd';
+                                                    label.style.fontWeight = '600';
+                                                } else {
+                                                    label.style.borderColor = '#dee2e6';
+                                                    label.style.backgroundColor = 'white';
+                                                    label.style.color = 'inherit';
+                                                    label.style.fontWeight = 'normal';
+                                                }
+                                            });
+                                        });
+                                    });
+                                </script>
+                            </div>
+                            <div class="mb-3" th:if="${categories == null or categories.isEmpty()}">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i> 등록된 카테고리가 없습니다. 
+                                    <a href="/categories" class="alert-link">카테고리 관리</a>에서 먼저 카테고리를 추가해주세요.
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <a th:href="@{'/posts/' + ${post.id}}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> 취소
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i> 수정하기
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2025 게시판. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

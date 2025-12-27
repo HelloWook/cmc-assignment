@@ -1,0 +1,94 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# VS Code
+.vscode/
+
+# Mac
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Application
+*.log
+*.jar
+*.war
+*.ear
+*.class
+
+# Database
+mysql_data/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+node_modules/
+package-lock.json
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.*.secret
+
+# Application properties (local/secret configurations)
+application-local.properties
+application-*.local.properties
+application-*.secret.properties
+!application.properties
+!application-test.properties
+
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# IDE specific
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# Logs
+logs/
+*.log.*
+*.log.gz
+
+# Backup files
+*.bak
+*.backup
+*~

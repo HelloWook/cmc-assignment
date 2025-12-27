@@ -1,0 +1,22 @@
+FROM eclipse-temurin:17-jdk-alpine
+
+WORKDIR /app
+
+# Gradle wrapper 및 설정 파일 복사
+COPY gradlew .
+COPY gradlew.bat .
+COPY gradle ./gradle
+COPY build.gradle .
+COPY settings.gradle .
+
+# 소스 코드는 볼륨 마운트로 처리되므로 여기서는 복사하지 않음
+# 하지만 초기 빌드를 위해 복사
+COPY src ./src
+
+RUN chmod +x ./gradlew
+
+# Gradle의 continuous build와 Spring Boot DevTools를 함께 사용
+# --continuous: 소스 변경 감지 시 자동으로 재빌드
+# --no-daemon: 도커 컨테이너에서 데몬 모드 비활성화
+# --watch-fs: 파일 시스템 감시 활성화 (Windows/Docker 환경에서 더 안정적)
+CMD ["./gradlew", "bootRun", "--continuous", "--no-daemon", "--watch-fs"]

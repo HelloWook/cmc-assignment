@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>카테고리 관리</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f8f9fa;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+      }
+      .navbar {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .category-container {
+        max-width: 900px;
+        margin: 2rem auto;
+      }
+      .card {
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        margin-bottom: 1.5rem;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .card-header {
+        background: #ffffff;
+        border-bottom: 1px solid #e9ecef;
+        padding: 1.25rem;
+      }
+      .category-item {
+        background: #ffffff;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        transition: all 0.2s ease;
+      }
+      .category-item:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border-color: #dee2e6;
+        transform: translateY(-1px);
+      }
+      .category-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 0.5rem;
+      }
+      .category-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+      }
+      .category-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+      .btn-action {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        color: #495057;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+      }
+      .btn-action:hover {
+        background: #e9ecef;
+        border-color: #dee2e6;
+      }
+      .btn-action.edit:hover {
+        background: #e7f1ff;
+        border-color: #0d6efd;
+        color: #0d6efd;
+      }
+      .btn-action.delete:hover {
+        background: #fee;
+        border-color: #dc3545;
+        color: #dc3545;
+      }
+      .edit-form {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 0.75rem;
+      }
+      footer {
+        background-color: #343a40;
+        color: #fff;
+        padding: 2rem 0;
+        margin-top: 3rem;
+      }
+      .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+      }
+      .empty-state i {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+      }
+      .create-form-card {
+        background: #ffffff;
+        border: 1px solid #e9ecef;
+      }
+      .create-form-card .card-header {
+        background: #ffffff;
+        border-bottom: 1px solid #e9ecef;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="/">
+          <i class="bi bi-chat-square-text"></i> 게시판
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/">홈</a>
+            </li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown" th:if="${isLoggedIn}">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="userDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="bi bi-person-circle"></i>
+                <span th:text="${currentUser.nickname}">사용자</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <span
+                    class="dropdown-item-text text-muted"
+                    th:text="${currentUser.email}"
+                    >이메일</span
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="dropdown-item">
+                      <i class="bi bi-box-arrow-right"></i> 로그아웃
+                    </button>
+                  </form>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+      <div class="container">
+        <div class="category-container">
+          <div
+            th:if="${successMessage}"
+            class="alert alert-success alert-dismissible fade show"
+            role="alert"
+          >
+            <i class="bi bi-check-circle"></i>
+            <span th:text="${successMessage}"></span>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+            ></button>
+          </div>
+          <div
+            th:if="${errorMessage}"
+            class="alert alert-danger alert-dismissible fade show"
+            role="alert"
+          >
+            <i class="bi bi-exclamation-circle"></i>
+            <span th:text="${errorMessage}"></span>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+            ></button>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h1 class="h3 mb-1 fw-bold" style="color: #212529">
+                <i class="bi bi-tags text-primary"></i> 카테고리 관리
+              </h1>
+              <p class="text-muted mb-0" style="font-size: 0.9rem">
+                게시글을 분류할 카테고리를 관리합니다
+              </p>
+            </div>
+            <a
+              href="/"
+              class="btn btn-sm"
+              style="
+                background: #f8f9fa;
+                border: 1px solid #e9ecef;
+                color: #495057;
+              "
+            >
+              <i class="bi bi-arrow-left"></i> 목록으로
+            </a>
+          </div>
+
+          <div class="card create-form-card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0 fw-semibold" style="color: #212529">
+                <i class="bi bi-plus-circle text-primary"></i> 새 카테고리 추가
+              </h5>
+            </div>
+            <div class="card-body p-4">
+              <form
+                th:action="@{/categories}"
+                method="post"
+                th:object="${categoryRequest}"
+              >
+                <div class="d-flex gap-2 align-items-end">
+                  <div class="flex-grow-1">
+                    <label
+                      for="categoryName"
+                      class="form-label small fw-semibold text-muted mb-1"
+                    >
+                      <i class="bi bi-tag"></i> 카테고리 이름
+                    </label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="categoryName"
+                      th:field="*{name}"
+                      placeholder="예: 공지사항, 질문, 자유게시판 등"
+                      required
+                      autofocus
+                    />
+                  </div>
+                  <div>
+                    <button
+                      type="submit"
+                      class="btn btn-primary"
+                      style="border-radius: 8px"
+                    >
+                      <i class="bi bi-plus-circle"></i> 추가하기
+                    </button>
+                  </div>
+                </div>
+                <small class="form-text text-muted d-block mt-2">
+                  게시글을 분류할 카테고리 이름을 입력하세요.
+                </small>
+              </form>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-semibold" style="color: #212529">
+                  <i class="bi bi-list-ul text-primary"></i> 카테고리 목록
+                </h5>
+                <span
+                  class="badge"
+                  style="
+                    background: #e9ecef;
+                    color: #495057;
+                    font-weight: normal;
+                    font-size: 0.9rem;
+                  "
+                  th:text="${categories != null ? categories.size() : 0} + '개'"
+                  >0개</span
+                >
+              </div>
+            </div>
+            <div class="card-body p-4">
+              <div th:if="${categories != null and !categories.isEmpty()}">
+                <div th:each="category : ${categories}" class="category-item">
+                  <div th:id="'category-name-' + ${category.id}">
+                    <div
+                      class="d-flex justify-content-between align-items-start"
+                    >
+                      <div class="flex-grow-1">
+                        <div class="category-name">
+                          <i class="bi bi-tag-fill text-primary me-2"></i>
+                          <span th:text="${category.name}">카테고리</span>
+                        </div>
+                        <div class="category-meta">
+                          <i class="bi bi-calendar3"></i>
+                          <span
+                            th:text="${#temporals.format(category.createdAt, 'yyyy-MM-dd HH:mm')}"
+                            >날짜</span
+                          >
+                          <span class="ms-3">
+                            <i class="bi bi-hash"></i>
+                            <span th:text="${category.id}">ID</span>
+                          </span>
+                        </div>
+                      </div>
+                      <div class="category-actions">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-action edit"
+                          th:onclick="'editCategory(' + ${category.id} + ')'"
+                          title="수정"
+                        >
+                          <i class="bi bi-pencil"></i> 수정
+                        </button>
+                        <form
+                          th:action="@{'/categories/' + ${category.id} + '/delete'}"
+                          method="post"
+                          class="d-inline"
+                        >
+                          <button
+                            type="submit"
+                            class="btn btn-sm btn-action delete"
+                            onclick="return confirm('정말 삭제하시겠습니까?\n이 카테고리가 사용 중인 게시글에서도 제거됩니다.')"
+                            title="삭제"
+                          >
+                            <i class="bi bi-trash"></i> 삭제
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    th:id="'category-edit-' + ${category.id}"
+                    style="display: none"
+                    class="edit-form"
+                  >
+                    <form
+                      th:action="@{'/categories/' + ${category.id} + '/edit'}"
+                      method="post"
+                    >
+                      <div class="d-flex gap-2 align-items-end">
+                        <div class="flex-grow-1">
+                          <label
+                            class="form-label small fw-semibold text-muted mb-1"
+                          >
+                            <i class="bi bi-pencil"></i> 카테고리 이름 수정
+                          </label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            th:id="'edit-name-' + ${category.id}"
+                            th:name="name"
+                            th:value="${category.name}"
+                            required
+                            autofocus
+                          />
+                        </div>
+                        <div class="d-flex gap-2">
+                          <button
+                            type="submit"
+                            class="btn btn-sm"
+                            style="
+                              background: #0d6efd;
+                              color: white;
+                              border: none;
+                            "
+                            title="저장"
+                          >
+                            <i class="bi bi-check-lg"></i> 저장
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-sm"
+                            style="
+                              background: #f8f9fa;
+                              border: 1px solid #e9ecef;
+                              color: #495057;
+                            "
+                            th:onclick="'cancelEditCategory(' + ${category.id} + ')'"
+                            title="취소"
+                          >
+                            <i class="bi bi-x-lg"></i> 취소
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div
+                th:if="${categories == null or categories.isEmpty()}"
+                class="empty-state"
+              >
+                <i class="bi bi-inbox"></i>
+                <h5 class="text-muted mb-2">등록된 카테고리가 없습니다</h5>
+                <p class="text-muted small mb-0">
+                  위의 폼에서 카테고리를 추가해보세요.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <div class="container text-center">
+        <p class="mb-0">&copy; 2025 게시판. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function editCategory(categoryId) {
+        document.getElementById("category-name-" + categoryId).style.display =
+          "none";
+        document.getElementById("category-edit-" + categoryId).style.display =
+          "block";
+        const input = document.getElementById("edit-name-" + categoryId);
+        if (input) {
+          setTimeout(() => input.focus(), 100);
+        }
+      }
+      function cancelEditCategory(categoryId) {
+        document.getElementById("category-name-" + categoryId).style.display =
+          "block";
+        document.getElementById("category-edit-" + categoryId).style.display =
+          "none";
+      }
+    </script>
+  </body>
+</html>
